@@ -20,42 +20,50 @@ namespace GTASandbox.Runs
 
         protected override void Process()
         {
-            Camera cam = new Camera(false);
+            Camera cam = new Camera(true);
             for (int i = 0; i < cameras.Length; i++)
             {
                 cam.Position = cameras[i].Item1;
                 cam.Rotation = cameras[i].Item2;
                 Game.LocalPlayer.Character.Position = cam.GetOffsetPositionFront(-3);
-                GameFiber.Sleep(1000);
+                World.TimeOfDay = new TimeSpan(16, 0, 0);
+                World.Weather = WeatherType.Clear;
+                Sleep(1000);
+                Game.TimeScale = 0;
                 foreach (var item in items)
                 {
-                    name = item;
-                    Natives.x2206BF9A37B7F724(item, 5000, false);
-                    GameFiber.Sleep(2000);
-                    Functions.Screenshot(0, 0, 1920, 1080, $"{Directory}//{item}_{i}", true);
-                    GameFiber.Sleep(500);
+                    Game.DisplaySubtitle(item, 6000);
                     Natives.xB4EDDC19532BFB85();
-                    GameFiber.Sleep(2500);
+                    if (item != "None") Natives.x2206BF9A37B7F724(item, 5000, false);
+                    Sleep(2000);
+                    Functions.Screenshot(0, 0, 1920, 1080, $"{Directory}//{item}_{i}", true);
+                    Sleep(500);
+                    Natives.xB4EDDC19532BFB85();
+                    Sleep(2500);
                 }
+                Game.TimeScale = 1;
             }
+            if (cam) cam.Delete();
         }
 
-        protected override void End()
+        public override void End()
         {
+            Natives.xB4EDDC19532BFB85();
+            Camera.DeleteAllCameras();
         }
 
         protected override void Tick()
         {
-            if (name != "") Game.DisplaySubtitle(name, 100);
+            Natives.x719FF505F097FD20();
         }
 
-        private string name = "";
         private readonly (Vector3, Rotator)[] cameras = new (Vector3, Rotator)[] 
         {
-
+            (new Vector3(37, -296, 52), new Rotator(0, 0, -170)),
         };
         private readonly string[] items = new string[] 
         {
+            "None",
             "CamPushInNeutral",
             "FocusIn",
             "FocusOut",

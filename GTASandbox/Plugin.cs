@@ -12,22 +12,40 @@ namespace GTASandbox
     {
         public static readonly string Directory = "Plugins//GTASandbox";
 
-        static Runs.AnimPostFX AnimPostFX = new Runs.AnimPostFX();
+        static Dictionary<Keys, Run> Runs = new Dictionary<Keys, Run> 
+        {
+            { Keys.D1, new Runs.AnimPostFX() },
+            { Keys.D2, new Runs.Timecycle() },
+        };
 
         public static void Load()
         {
+            Camera.DeleteAllCameras();
             System.IO.Directory.CreateDirectory(Directory);
             GameFiber.ExecuteNewWhile(Tick, () => true);
         }
 
         public static void Unload(bool crash)
         {
-
+            Runs.Values.ToArray().ToList().ForEach(x => x.End());
         }
 
         public static void Tick()
         {
-            if (Game.IsKeyDown(Keys.D1)) if (AnimPostFX.IsRunning) AnimPostFX.Stop(); else AnimPostFX.Do();
+            foreach (var item in Runs)
+            {
+                if(Game.IsKeyDown(item.Key))
+                {
+                    if(item.Value.IsRunning)
+                    {
+                        item.Value.Stop();
+                    } else
+                    {
+                        GameFiber.Sleep(5000);
+                        item.Value.Do();
+                    }
+                }
+            }
         }
     }
 }

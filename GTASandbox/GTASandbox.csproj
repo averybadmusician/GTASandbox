@@ -53,10 +53,18 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Run.cs" />
     <Compile Include="Runs\AnimPostFX.cs" />
+    <Compile Include="Runs\Timecycle.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>SET GTA="S:\Steam\steamapps\common\Grand Theft Auto V"
+IF EXIST %25GTA%25 (
+    COPY $(MSBuildProjectDirectory)\$(OutputPath)$(AssemblyName).dll "S:\Steam\steamapps\common\Grand Theft Auto V\Plugins\$(AssemblyName).dll"
+    COPY $(MSBuildProjectDirectory)\$(OutputPath)$(AssemblyName).pdb "S:\Steam\steamapps\common\Grand Theft Auto V\Plugins\$(AssemblyName).pdb"
+)</PostBuildEvent>
+  </PropertyGroup>
 </Project>

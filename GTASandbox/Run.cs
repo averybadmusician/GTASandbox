@@ -10,7 +10,7 @@ namespace GTASandbox
     {
         protected string Directory { get { System.IO.Directory.CreateDirectory(directory); return directory; } }
         protected abstract void Start();
-        protected abstract void End();
+        public abstract void End();
         protected abstract void Process();
         protected abstract void Tick();
         protected abstract bool Player { get; }
@@ -19,6 +19,7 @@ namespace GTASandbox
         private Rage.GameFiber fiber = null;
         private Rage.Vector3 oldPos = Rage.Vector3.Zero;
         private float oldHeading = 0;
+        private DateTime sleep = DateTime.Now;
 
         protected Run()
         {
@@ -55,11 +56,12 @@ namespace GTASandbox
             if (Player) ApplyPlayer(true);
             fiber = Rage.GameFiber.StartNew(delegate 
             {
+                Rage.GameFiber.Yield();
                 Start();
                 Process();
                 End();
             });
-            Rage.GameFiber.ExecuteNewWhile(Tick, () => fiber != null && fiber.IsAlive);
+            Rage.GameFiber.ExecuteNewWhile(delegate { Tick(); }, () => fiber != null && fiber.IsAlive);
             Rage.Game.LogTrivial($"Started {GetType().Name}");
         }
 
@@ -70,7 +72,14 @@ namespace GTASandbox
             if (fiber.IsAlive) fiber.Abort();
             if (Player) ApplyPlayer(false);
             fiber = null;
+            End();
             Rage.Game.LogTrivial($"Stopped {GetType().Name}");
+        }
+
+        protected void Sleep(int duration)
+        {
+            sleep = DateTime.Now;
+            while ((DateTime.Now - sleep).TotalMilliseconds < duration) Rage.GameFiber.Yield();
         }
     }
 }
